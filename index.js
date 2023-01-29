@@ -290,3 +290,21 @@ function controlKeyboard(event) {
     }
   }  
 };
+
+const isMobile = window.matchMedia('(max-width: 990px)').matches;
+if(isMobile) {
+  const mobileButtons = document.querySelectorAll(".mobile-buttons-container button");
+  mobileButtons.forEach(button => button.addEventListener("click", () => {
+    if(timerId) {
+      if(button.classList[0] === "left-button") {
+      moveLeft();
+    } else if(button.classList[0] === "right-button") {
+      moveRight();
+    } else if(button.classList[0] === "rotate-button") {
+      rotate();
+    } else if(button.classList[0] === "down-button") {
+      moveDown();
+    }
+    }    
+  }));
+};
