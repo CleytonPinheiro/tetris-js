@@ -90,3 +90,23 @@ body {
     background: red;
     border: 2px solid black;
 }
+
+.blue {
+    background: linear-gradient(to right, #0033cc, #99b3ff);
+}
+
+.yellow {
+    background: linear-gradient(to right, #ffcc00, #ffeb99);
+}
+
+.red {
+    background: linear-gradient(to right, #ff3300, #ff5c33, #ff8566);
+}
+
+.orange {
+    background: linear-gradient(to right, #b34700, #ff751a, #ff944d);
+}
+
+.pink {
+    background: linear-gradient(to right, #cc0099, #ff80ff, #ff99ff);
+}

@@ -2,6 +2,7 @@
 const gridWidth = 10;
 const shapeFreezeAudio = new Audio("./audios/audios_audios_tetraminoFreeze.wav");
 const completedLineAudio = new Audio("./audios/audios_audios_completedLine.wav");
+const gameOverAudio = new Audio("./audios/audios_audios_gameOver.wav");
 
 const lShape = [
   [1, 2, gridWidth + 1, gridWidth*2 + 1],
@@ -40,6 +41,10 @@ const iShape = [
 
 const allShapes = [lShape, zShape, tShape, oShape, iShape];
 
+const colors = ["blue", "yellow", "red", "orange", "pink"];
+let currentColor = Math.floor(Math.random() * colors.length);
+let nextColor = colors[currentColor];
+
 let currentPosition = 3;
 let currentRotation = 0;
 let randomShape = Math.floor(Math.random() * allShapes.length);
@@ -48,7 +53,7 @@ let gridSquares = Array.from(document.querySelectorAll(".grid div"));
 
 function draw() {
   currentShape.forEach(squareIndex => {
-      gridSquares[squareIndex + currentPosition].classList.add("shapePainted");
+    gridSquares[squareIndex + currentPosition].classList.add("shapePainted", `${colors[currentColor]}`);
   })
 };
 
@@ -56,7 +61,7 @@ draw();
 
 function undraw() {
   currentShape.forEach(squareIndex => {
-      gridSquares[squareIndex + currentPosition].classList.remove("shapePainted");
+      gridSquares[squareIndex + currentPosition].classList.remove("shapePainted", `${colors[currentColor]}`);
   })
 };
 
@@ -73,6 +78,7 @@ restartButton.addEventListener("click", () => {
 });
 
 //setInterval(moveDown, 600);
+let timeMoveDown = 600;
 let timerId = null;
 const startStopButton = document.getElementById("start-button");
 
@@ -81,7 +87,7 @@ startStopButton.addEventListener("click", () => {
     clearInterval(timerId);
     timerId = null;
   } else {
-    timerId = setInterval(moveDown, 600);
+    timerId = setInterval(moveDown, timeMoveDown);
   }
 });
 
@@ -94,6 +100,7 @@ function freeze() {
     currentRotation = 0;
     randomShape = nextRandomShape;
     currentShape = allShapes[randomShape][currentRotation];
+    currentColor = nextColor;
     draw();
 
     checkIfRowIsFilled();
@@ -102,6 +109,7 @@ function freeze() {
 
     shapeFreezeAudio.play();
     displayNextShape();
+    gameOver();
   }
 };
 
@@ -188,11 +196,12 @@ const possibleNextShapes = [
 let nextRandomShape = Math.floor(Math.random() * possibleNextShapes.length);
 
 function displayNextShape() {
-  miniGridSquares.forEach(square => square.classList.remove("shapePainted"));
+  miniGridSquares.forEach(square => square.classList.remove("shapePainted", `${colors[nextColor]}`));
   nextRandomShape = Math.floor(Math.random() * possibleNextShapes.length);
+  nextColor = Math.floor(Math.random() * colors.length);
   const nextShape = possibleNextShapes[nextRandomShape];
   nextShape.forEach(squareIndex => 
-    miniGridSquares[squareIndex + nextPosition + miniGridWidth].classList.add("shapePainted")
+    miniGridSquares[squareIndex + nextPosition + miniGridWidth].classList.add("shapePainted", `${colors[nextColor]}`)
   );
 };
 
@@ -204,6 +213,37 @@ let score =0;
 function updateScore(updateValue) {
   score += updateValue;
   $score.textContent = score;
+
+  clearInterval(timerId);
+
+  if(score <=  450) {
+    timeMoveDown = 500;
+  } else if(450 < score && score <= 1000) {
+    timeMoveDown = 400;
+  } else if(1000 < score && score <= 1700) {
+    timeMoveDown = 300;
+  }  else if(1700 < score && score <= 2700) {
+    timeMoveDown = 200;
+  }  else if(2700 < score && score <= 3850) {
+    timeMoveDown = 150;
+  }  else {
+    timeMoveDown = 110;
+  }
+
+  timerId = setInterval(moveDown, timeMoveDown);
+};
+
+function gameOver() {
+  if(currentShape.some(squareIndex => 
+    gridSquares[squareIndex + currentPosition].classList.contains("filled")
+  )) {
+    updateScore(-13);
+    clearInterval(timerId);
+    timerId = null;
+    startStopButton.disabled = true;
+    gameOverAudio.play();
+    score.innerHtml += "<br />" + "GAME OVER";
+  }
 };
 
 document.addEventListener('keydown', controlKeyboard);
@@ -225,7 +265,7 @@ function checkIfRowIsFilled() {
     if(isRowPainted) {
       const squareRemoved = gridSquares.splice(row, gridWidth);
       squareRemoved.forEach(square =>
-        square.classList.remove("shapePainted", "filled")
+        square.removeAttribute("class")
       );
 
       gridSquares = squareRemoved.concat(gridSquares);
