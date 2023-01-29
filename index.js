@@ -1,5 +1,7 @@
 //Shapes
 const gridWidth = 10;
+const shapeFreezeAudio = new Audio("./audios/audios_audios_tetraminoFreeze.wav");
+const completedLineAudio = new Audio("./audios/audios_audios_completedLine.wav");
 
 const lShape = [
   [1, 2, gridWidth + 1, gridWidth*2 + 1],
@@ -65,7 +67,23 @@ function moveDown() {
   draw();
 };
 
-setInterval(moveDown, 600);
+const restartButton = document.getElementById("restart-button");
+restartButton.addEventListener("click", () => {
+  window.location.reload();
+});
+
+//setInterval(moveDown, 600);
+let timerId = null;
+const startStopButton = document.getElementById("start-button");
+
+startStopButton.addEventListener("click", () => {
+  if(timerId) {
+    clearInterval(timerId);
+    timerId = null;
+  } else {
+    timerId = setInterval(moveDown, 600);
+  }
+});
 
 function freeze() {
   if(currentShape.some(squareIndex =>
@@ -74,9 +92,16 @@ function freeze() {
 
     currentPosition = 3;
     currentRotation = 0;
-    randomShape = Math.floor(Math.random() * allShapes.length);
+    randomShape = nextRandomShape;
     currentShape = allShapes[randomShape][currentRotation];
     draw();
+
+    checkIfRowIsFilled();
+
+    updateScore(13);
+
+    shapeFreezeAudio.play();
+    displayNextShape();
   }
 };
 
@@ -112,14 +137,116 @@ function moveRight() {
   draw();
 };
 
+function previousRotation() {
+  if(currentRotation === 0) {
+    currentRotation = currentShape.length - 1;
+  } else {
+    currentRotation--;
+  }
+  
+  currentShape = allShapes[randomShape][currentRotation];
+};
+
+function rotate() {
+  undraw();
+  if(currentRotation === currentShape.length - 1) {
+    currentRotation = 0;
+  } else {
+    currentRotation++;
+  }
+
+  currentShape = allShapes[randomShape][currentRotation];
+
+  const isLeftEdgeLimit =  currentShape.some(squareIndex => (squareIndex + currentPosition) % gridWidth === 0);
+  const isRightEdgeLimit = currentShape.some(squareIndex => (squareIndex + currentPosition) % gridWidth === gridWidth - 1);
+
+  if(isLeftEdgeLimit && isRightEdgeLimit) {
+    previousRotation();
+  }
+
+  const isFilled = currentShape.some(squareIndex =>
+      gridSquares[squareIndex + currentPosition].classList.contains("filled")
+  )
+  if(isFilled) {
+     previousRotation();
+  }
+
+  draw();  
+};
+
+const miniGridSquares = document.querySelectorAll(".mini-grid div");
+const miniGridWidth = 6;
+const nextPosition = 2;
+const possibleNextShapes = [
+  [1, 2, miniGridWidth + 1, miniGridWidth*2 + 1],
+  [miniGridWidth + 1, miniGridWidth + 2, miniGridWidth*2, miniGridWidth*2 + 1],
+  [1, miniGridWidth, miniGridWidth + 1, miniGridWidth + 2],
+  [0, 1, miniGridWidth, miniGridWidth + 1],
+  [0, 1, miniGridWidth, miniGridWidth + 1]
+];
+
+let nextRandomShape = Math.floor(Math.random() * possibleNextShapes.length);
+
+function displayNextShape() {
+  miniGridSquares.forEach(square => square.classList.remove("shapePainted"));
+  nextRandomShape = Math.floor(Math.random() * possibleNextShapes.length);
+  const nextShape = possibleNextShapes[nextRandomShape];
+  nextShape.forEach(squareIndex => 
+    miniGridSquares[squareIndex + nextPosition + miniGridWidth].classList.add("shapePainted")
+  );
+};
+
+displayNextShape();
+
+const $score = document.querySelector(".score");
+let score =0;
+
+function updateScore(updateValue) {
+  score += updateValue;
+  $score.textContent = score;
+};
+
 document.addEventListener('keydown', controlKeyboard);
 
-function controlKeyboard(event) {
-  if(event.key === "ArrowLeft") {
-    moveLeft();
-  } else if(event.key === "ArrowRight") {
-    moveRight();
-  } else if(event.key === "ArrowDown") {
-    moveDown();
+let grid = document.querySelector(".grid");
+
+function checkIfRowIsFilled() {
+  for(var row =0; row < gridSquares.length; row += gridWidth) {
+    let currentRow = [];
+
+    for(var square = row; square < row + gridWidth; square++) {
+      currentRow.push(square);
+    }
+
+    const isRowPainted = currentRow.every(square =>
+      gridSquares[square].classList.contains("shapePainted")
+    );
+
+    if(isRowPainted) {
+      const squareRemoved = gridSquares.splice(row, gridWidth);
+      squareRemoved.forEach(square =>
+        square.classList.remove("shapePainted", "filled")
+      );
+
+      gridSquares = squareRemoved.concat(gridSquares);
+      gridSquares.forEach(square => grid.appendChild(square));
+
+      updateScore(97);
+      completedLineAudio.play();
+    }
   }
+};
+
+function controlKeyboard(event) {
+  if(timerId) {
+    if(event.key === "ArrowLeft") {
+    moveLeft();
+    } else if(event.key === "ArrowRight") {
+      moveRight();
+    } else if(event.key === "ArrowDown") {
+      moveDown();
+    } else if(event.key === "ArrowUp") {    
+      rotate();
+    }
+  }  
 };
