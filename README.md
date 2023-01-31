@@ -10,11 +10,11 @@ Projeto desenvolvido em parceria com canal YT: Senhor programador. Link: https:/
 
 ## Screenshots
 
-<img src="C:\Users\" style="height: 300px; width:900px;"/>
+<img src="./prints/tetris.png" style="height: 300px; width:900px;"/>
 
-<img src="C:\Users\" style="height: 300px; width:900px;"/>
+<img src="./prints/tetris2.png" style="height: 300px; width:900px;"/>
 
-<img src="C:\Users\" style="height: 300px; width:900px;"/>
+<img src="./prints/tetris-mobile.png" style="height: 300px; width:900px;"/>
 
 
 ## Funcionalidades:
