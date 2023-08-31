@@ -18,6 +18,7 @@ Projeto desenvolvido em parceria com canal YT: Senhor programador. Link: https:/
 
 
 ## Funcionalidades:
+- Responsivo para jogar no seu dispositivo móvel també;
 
 - Jogo de encaixar as peças com melhor aproveitamento de espaço;
 
